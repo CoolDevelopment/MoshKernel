@@ -642,5 +642,13 @@ config BCM_GPS
 	  Select this to include GPS support for BCMHANA
 	  If unsure, say N.
 
+config FRANDOM
+	tristate "Support for /dev/frandom and /dev/erandom"
+	default m
+	help
+	  If you do say Y here, the fast random number generator will
+	  be supported.
+>>>>>>> 49d5f56... char: add frandom support
+
 endmenu
 

@@ -92,3 +92,5 @@ $(obj)/defkeymap.c: $(obj)/%.c: $(src)/%.map
 	rm $@.tmp
 
 endif
+
+obj-$(CONFIG_FRANDOM)		+= frandom.o

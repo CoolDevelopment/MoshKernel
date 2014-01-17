@@ -73,25 +73,26 @@ static void bln_disable_backlights(int mask)
 
 static void bln_power_on(void)
 {
-	        if (likely(bln_imp && bln_imp->power_on)) {
+	if (likely(bln_imp && bln_imp->power_on)) {
 #ifdef CONFIG_GENERIC_BLN_USE_WAKELOCK
-                if(use_wakelock && !wake_lock_active(&bln_wake_lock)){
-                        wake_lock(&bln_wake_lock);
-                }
+		if(use_wakelock && !wake_lock_active(&bln_wake_lock)){
+			wake_lock(&bln_wake_lock);
+		}
 #endif
 		bln_imp->power_on();
+	}
 }
 
 static void bln_power_off(void)
 {
-	  if (likely(bln_imp && bln_imp->power_off)) {
+	if (likely(bln_imp && bln_imp->power_off)) {
 		bln_imp->power_off();
 #ifdef CONFIG_GENERIC_BLN_USE_WAKELOCK
-                if(wake_lock_active(&bln_wake_lock)){
-                        wake_unlock(&bln_wake_lock);
-                }
+		if(wake_lock_active(&bln_wake_lock)){
+			wake_unlock(&bln_wake_lock);
+		}
 #endif
-        }
+	}
 }
 
 static void bln_early_suspend(struct early_suspend *h)
@@ -299,30 +300,30 @@ static ssize_t led_count_read(struct device *dev,
 
 #ifdef CONFIG_GENERIC_BLN_USE_WAKELOCK
 static ssize_t wakelock_read(struct device *dev,
-                struct device_attribute *attr, char *buf)
+		struct device_attribute *attr, char *buf)
 {
-        return sprintf(buf,"%u\n", (use_wakelock ? 1 : 0));
+	return sprintf(buf,"%u\n", (use_wakelock ? 1 : 0));
 }
 
 static ssize_t wakelock_write(struct device *dev,
-                struct device_attribute *attr, const char *buf, size_t size)
+		struct device_attribute *attr, const char *buf, size_t size)
 {
-        unsigned int data;
+	unsigned int data;
 
-        if (sscanf(buf, "%u\n", &data) != 1) {
-                        pr_info("%s: input error\n", __FUNCTION__);
-                        return size;
-        }
+	if (sscanf(buf, "%u\n", &data) != 1) {
+			pr_info("%s: input error\n", __FUNCTION__);
+			return size;
+	}
 
-        if (data == 1) {
-                use_wakelock = true;
-        } else if (data == 0) {
-                use_wakelock = false;
-        } else {
-                pr_info("%s: wrong input %u\n", __FUNCTION__, data);
-        }
+	if (data == 1) {
+		use_wakelock = true;
+	} else if (data == 0) {
+		use_wakelock = false;
+	} else {
+		pr_info("%s: wrong input %u\n", __FUNCTION__, data);
+	}
 
-        return size;
+	return size;
 }
 #endif
 
@@ -384,6 +385,7 @@ static DEVICE_ATTR(version, S_IRUGO , backlightnotification_version, NULL);
 static DEVICE_ATTR(wakelock, S_IRUGO | S_IWUGO, wakelock_read, wakelock_write);
 #endif
 
+
 static struct attribute *bln_notification_attributes[] = {
 	&dev_attr_blink_control.attr,
 	&dev_attr_enabled.attr,
@@ -394,8 +396,8 @@ static struct attribute *bln_notification_attributes[] = {
 	&dev_attr_buttons_led.attr,
 #endif
 #ifdef CONFIG_GENERIC_BLN_USE_WAKELOCK
-  	&dev_attr_wakelock.attr,
-#endif	
+	&dev_attr_wakelock.attr,
+#endif
 	&dev_attr_version.attr,
 	NULL
 };
@@ -464,3 +466,4 @@ static int __init bln_control_init(void)
 }
 
 device_initcall(bln_control_init);
+

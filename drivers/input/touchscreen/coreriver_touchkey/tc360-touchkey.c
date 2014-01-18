@@ -1543,6 +1543,8 @@ static int tc360_disable_touchkey_bln(int led_mask)
 
 static int tc360_power_on(void)
 {
+	bln_tc360_data->led_brightness = 1;
+        gpio_set_value(TOUCHKEY_LDO_EN, 1);
 	bln_tc360_data->pdata->power(true);
 	msleep(TC360_POWERON_DELAY);
         return 0;
@@ -1550,6 +1552,8 @@ static int tc360_power_on(void)
 
 static int tc360_power_off(void)
 {
+	bln_tc360_data->led_brightness = 0;
+        gpio_set_value(TOUCHKEY_LDO_EN, 0);
 	bln_tc360_data->pdata->power(false);
 	msleep(TC360_POWERON_DELAY);
         return 0;

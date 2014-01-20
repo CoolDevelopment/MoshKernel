@@ -1,4 +1,4 @@
-<# bcmdhd
+# bcmdhd
 #####################
 # SDIO Basic feature
 #####################

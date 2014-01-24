@@ -1525,8 +1525,6 @@ struct tc360_data *bln_tc360_data;
 
 static int tc360_enable_touchkey_bln(int led_mask)
 {
-	
-	bln_tc360_data->led_brightness = 1;
         gpio_set_value(TOUCHKEY_LDO_EN, 1);
 
         return 0;
@@ -1534,7 +1532,6 @@ static int tc360_enable_touchkey_bln(int led_mask)
 
 static int tc360_disable_touchkey_bln(int led_mask)
 {
-	bln_tc360_data->led_brightness = 0;
         gpio_set_value(TOUCHKEY_LDO_EN, 0);
 
         return 0;
@@ -1543,19 +1540,16 @@ static int tc360_disable_touchkey_bln(int led_mask)
 
 static int tc360_power_on(void)
 {
-	bln_tc360_data->led_brightness = 1;
-        gpio_set_value(TOUCHKEY_LDO_EN, 1);
 	bln_tc360_data->pdata->power(true);
 	msleep(TC360_POWERON_DELAY);
+	bln_tc360_data->led_brightness = 1;
         return 0;
 }
 
 static int tc360_power_off(void)
 {
 	bln_tc360_data->led_brightness = 0;
-        gpio_set_value(TOUCHKEY_LDO_EN, 0);
 	bln_tc360_data->pdata->power(false);
-	msleep(TC360_POWERON_DELAY);
         return 0;
 }
 
@@ -1953,7 +1947,12 @@ static int tc360_resume(struct device *dev)
 	IsTouchkeyPowerOn = 1;
 
 	if (data->led_brightness >= 1)
+#ifdef CONFIG_GENERIC_BLN
+/*force touchkey leds to get turned off when device gets unlocked and bln is enabled*/
+		touchkey_led_on(data, 0);
+#else
 		touchkey_led_on(data, 1);
+#endif
 	
 	printk("[TouchKey] enable_irq...\n");
 	

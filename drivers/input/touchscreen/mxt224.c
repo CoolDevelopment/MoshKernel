@@ -26,6 +26,7 @@
 #include <linux/firmware.h>
 #include <linux/input/mt.h>
 #include <mach/pinmux.h>
+#include <linux/input/tc360-touchkey.h>
 
 #define OBJECT_TABLE_START_ADDRESS	7
 #define OBJECT_TABLE_ELEMENT_SIZE	6
@@ -1684,6 +1685,11 @@ static int mxt224_internal_resume(struct mxt224_data *data)
 	data->boot_or_resume = 1;
 	data->noise_median.mferr_count = 0;
 	data->noise_median.mferr_setting = false;
+
+#ifdef CONFIG_GENERIC_BLN
+	touchkey_led_on(0);
+#endif
+
 	return ret;
 }
 

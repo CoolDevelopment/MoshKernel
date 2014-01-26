@@ -182,7 +182,7 @@ static void GPIO_pullup_setting(bool v_setval)
 
 
 
-void touchkey_led_on(struct tc360_data *data, bool on)
+void touchkey_led_on(bool on)
 {
 	printk("touchkey_led_on = %d\n", on);
 
@@ -1131,11 +1131,11 @@ static void tc360_led_set(struct led_classdev *led_cdev,
 
 	if( value >= 1 && prev_value == 0 && IsTouchkeyPowerOn)
 	{	
-		touchkey_led_on(data, 1);
+		touchkey_led_on(1);
 	}
 	else if( value==0 && prev_value != 0)
 	{
-		touchkey_led_on(data, 0);
+		touchkey_led_on(0);
 	}
 
 	prev_value=value;
@@ -1947,12 +1947,7 @@ static int tc360_resume(struct device *dev)
 	IsTouchkeyPowerOn = 1;
 
 	if (data->led_brightness >= 1)
-#ifdef CONFIG_GENERIC_BLN
-/*force touchkey leds to get turned off when device gets unlocked and bln is enabled*/
-		touchkey_led_on(data, 0);
-#else
-		touchkey_led_on(data, 1);
-#endif
+		touchkey_led_on(1);
 	
 	printk("[TouchKey] enable_irq...\n");
 	

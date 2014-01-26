@@ -3,7 +3,7 @@
 zram_enabled=1
 DISK_SIZE=150
 
-if($zram_enabled == 1); then
+if [ $zram_enabled == 1 ]; then
 
     swappiness=70
     echo $swapiness > /proc/sys/vm/swappiness
@@ -15,5 +15,6 @@ if($zram_enabled == 1); then
 else
     swappiness=45
     echo $swappiness > /proc/sys/vm/swappiness
+fi
 
 exit 0

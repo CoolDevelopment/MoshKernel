@@ -7,76 +7,35 @@ echo "*********************************************"
 echo
 echo
 
-# zram
+# swappiness
 continue=0
-while [ $continue == 0 ]; do
-  echo "Do you want to enable zRam?(1=yes/0=no)"
-  read zRam
-  if [ $zRam == 1 || $zRam == 0 ]; then
-    echo "zRam: "$zRam
+while [ "$continue" -eq "0" ]; do
+  echo "Wich default swapiness do you want, 0-100 is possible?(45)"
+  read swappiness
+  if [ "$swappiness" -ge "0" ] && [ "$swappiness" -le "100" ]; then
+    echo "swappiness: "$swappiness
     continue=1
+    echo $swappiness > /proc/sys/vm/swappiness
   else
-    echo  $zRam "is not a valid answer."
-  fi
-  sleep 1
-done
-
-# zramdisk size
-continue=0
-while [ $continue == 0 && $zRam == 0 ]; then
-  echo 
-  echo "How big do you want your zRam-disk to be?(1-300 Mb)"
-  read zRamdisk
-  if [ $zRamdisk >= 1 && $zRamdisk <= 300 ]
-    echo "zRam-disk-size: " $zRamdisk
-    continue=1
-  else 
-    echo $zRamdisk" is not a valid input, default zRam-disk-size will get used(100)"
-    continue=1
-    zRamdisk=100
-  fi
-  sleep 1
-done
-
-# swapiness
-continue=0
-while [ $continue == 0 ]; do
-  if [ $zRam == 0 ]; then
-    echo "Wich default swapiness do you want, 0-100 is possible?(45)"
-    read swapiness
-  else if [ $zRam == 1 ]; then
-    echo "Wich default swapiness do you want, 0-100 is possible?(70)"
-    read swapiness
-  fi
-  if [ $swapiness >= 0 && $swapiness >= 100 ]; then
-    echo "swapiness: "$swapiness
-    continue=1
-  else
-    if [ $zRam == 1 ]; then
-      echo $swapiness" is not a valid input, default swapiness will get used"
-	swapiness=70
-    else 
-        echo $swapiness" is not a valid input, default swapiness will get used"
-	swapiness=45
-    fi
-    continue=1
+    echo $swappiness" is not a valid input."
   fi
   sleep 1
 done
 
 # governor
 continue=0
-while [ continue == 0 ]; do
+while [ "$continue" -eq "0" ]; do
   echo "Wich cpufreq governor do you want to use?"
-  echo "Possible governors are: " $(cat /sys/devices/system/cpufreq/cpu1/available_governors)
+  echo "Possible governors are: " $(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors)
   read governor
-  for word in $(cat /sys/devices/system/cpufreq/cpu1/available_governors); do
-    if [ $governor == $word ]; then
+  for word in $(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors); do
+    if [ "$governor" = "$word" ]; then
       continue=1
     fi
   done
-  if [ $continue == 1 ]; then
+  if [ "$continue" = "1" ]; then
     echo "governor: "$governor
+    echo $governor > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
   else
     echo $governor" is not a valid input."
   fi
@@ -85,22 +44,81 @@ done
     
 # I/O schedluer
 continue=0
-while [ continue == 0 ]; do
+while [ "$continue" -eq "0" ]; do
   echo "Wich I/O scheduler do you want to use?"
-  echo "Possible governors are: " $(cat /sys/devices/system/cpufreq/cpu1/available_governors)
-  read governor
-  for word in # $(cat /sys/devices/system/cpufreq/cpu1/available_governors); do
-    if [ $governor == $word ]; then
+  echo "Possible governors are: " $(cat /sys/block/mmcblk0/queue/scheduler)
+  read iosched
+  for word in $(cat /sys/block/mmcblk0/queue/scheduler); do
+    if [ "$iosched" = "$word" ] || [ "[$iosched]" = "$word" ]; then
       continue=1
+      break
     fi
   done
-  if [ $continue == 1 ]; then
-    echo "governor: "$governor
+  if [ "$continue" = "1" ]; then
+    echo "I/O Scheduler: "$iosched
+    echo $iosched > /sys/block/mmcblk0/queue/scheduler
   else
-    echo $governor" is not a valid input."
+    echo $iosched" is not a valid input."
+  fi
+  sleep 1
+done
+
+# overclocking
+continue=0
+while [ "$continue" -eq "0" ]; do
+  echo "Do you want to overlock your cpu to 1.3 Ghz?(0/1)"
+  read oc
+  if [ "$oc" -eq "0" ] || [ "$oc" -eq "1" ]; then
+    if [ "$oc" -eq "1" ]; then
+      echo 1300000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+    else 
+      echo 1200000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+    fi
+    continue=1
+  else 
+    echo $oc" is not a valid input."
   fi
   sleep 1
 done
 
 
+#INIT.D SCRIPT
+continue=0
+while [ "$continue" -eq "0" ]; do
+config_file="system/etc/init.d/mosh_kernel_config"
+
+mount -o rw,remount /dev/block/mmcblk0p19 /system
+
+  echo "Do you want to save these settings as default?(0/1)"
+  read default
+  if [ "$default" -eq "1" ]; then
+  
+    if [ ! -d "/system/etc/init.d" ]; then
+      echo "You need init.d support for that"
+      break
+    fi
+    
+    if [ -f config_file ]; then
+      rm $config_file
+    fi
+  
+    touch $config_file
+    
+    if [ "$oc" -eq "1" ]; then
+      cpufreq=1300000
+    else
+      cpufreq=1200000
+    fi
+    
+    echo -e "#!/system/bin/sh\n\necho "$swappiness" > /proc/sys/vm/swappiness\necho "$governor" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor\necho "$iosched" > /sys/block/mmcblk0/queue/scheduler\necho "$cpufreq" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq" > $config_file
+    chmod 755 $config_file
+    mount -o ro,remount,errors=panic /dev/block/mmcblk0p19 /system
+    
+  fi
+  if [ "$default" -eq "0" ] || [ "$default" -eq "1" ]; then
+    continue=1
+  else
+    echo $default" is not a valid input"
+  fi
+done 
  

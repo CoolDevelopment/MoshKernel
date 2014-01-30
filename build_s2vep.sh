@@ -23,4 +23,4 @@ cp drivers/char/broadcom/gist.ko build_zip/system/lib/modules/gist.ko
 cp drivers/char/broadcom/sigmorph.ko build_zip/system/lib/modules/sigmorph.ko
 cd build_zip
 rm custom_kernel-*.zip 
-zip -r custom_kernel-$KERNELVER.zip kernel system META-INF
+zip -r MoshKernel-$KERNELVER.zip kernel system META-INF

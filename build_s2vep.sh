@@ -9,7 +9,7 @@ export KERNELVER=1.5.8
 export KBUILD_BUILD_VERSION=$KERNELVER+
 
 #TOOLCHAINDIRECTORY
-export CROSS_COMPILE=/home/cooldevelopment/android/cm10.2/prebuilts/gcc/linux-x86/arm/arm-eabi-4.7/bin/arm-eabi-
+export CROSS_COMPILE=/home/cooldevelopment/android/cm10.2/prebuilts/gcc/linux-x86/arm/arm-linux-gnueabihf-4.8/bin/arm-linux-gnueabihf-
 
 #BUILD KERNEL
 make mrproper

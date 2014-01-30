@@ -22,5 +22,5 @@ cp drivers/scsi/scsi_wait_scan.ko build_zip/system/lib/modules/scsi_wait_scan.ko
 cp drivers/char/broadcom/gist.ko build_zip/system/lib/modules/gist.ko
 cp drivers/char/broadcom/sigmorph.ko build_zip/system/lib/modules/sigmorph.ko
 cd build_zip
-rm custom_kernel-*.zip 
+rm MoshKernel-*.zip 
 zip -r MoshKernel-$KERNELVER.zip kernel system META-INF

@@ -1686,10 +1686,6 @@ static int mxt224_internal_resume(struct mxt224_data *data)
 	data->noise_median.mferr_count = 0;
 	data->noise_median.mferr_setting = false;
 
-#ifdef CONFIG_GENERIC_BLN
-	touchkey_led_on(0);
-#endif
-
 	return ret;
 }
 

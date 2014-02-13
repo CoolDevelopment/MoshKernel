@@ -147,6 +147,7 @@ struct tc360_data {
 };
 
 static int prev_value;
+static int LockLed;
 static int IsTouchkeyPowerOn = 1;
 
 #ifdef CONFIG_HAS_EARLYSUSPEND
@@ -1089,10 +1090,12 @@ static void tc360_led_worker(struct work_struct *work)
 #endif
 	br = data->led_brightness;
 
-	if (br == LED_OFF)
+	if (br == LED_OFF) {
 		buf = TC360_CMD_LED_OFF;
-	else /* LED_FULL*/
+	}
+	else /* LED_FULL*/ {
 		buf = TC360_CMD_LED_ON;
+	}
 
 	while (!data->enabled) {
 		usleep_range(100000, 200000);
@@ -1129,13 +1132,16 @@ static void tc360_led_set(struct led_classdev *led_cdev,
 	printk("[TouchKey] data->led_brightness=%d, prev_value=%d\n",data->led_brightness, prev_value);
 
 
-	if( value >= 1 && prev_value == 0 && IsTouchkeyPowerOn)
+	if( value >= 1 && prev_value == 0)
 	{	
 		touchkey_led_on(1);
+		LockLed = 1;
+		
 	}
 	else if( value==0 && prev_value != 0)
 	{
 		touchkey_led_on(0);
+		LockLed = 0;
 	}
 
 	prev_value=value;
@@ -1543,6 +1549,7 @@ static int tc360_power_on(void)
 	bln_tc360_data->pdata->power(true);
 	msleep(TC360_POWERON_DELAY);
 	bln_tc360_data->led_brightness = 1;
+	
         return 0;
 }
 
@@ -1550,6 +1557,7 @@ static int tc360_power_off(void)
 {
 	bln_tc360_data->led_brightness = 0;
 	bln_tc360_data->pdata->power(false);
+
         return 0;
 }
 
@@ -1946,8 +1954,8 @@ static int tc360_resume(struct device *dev)
 	data->pdata->power(true);
 	IsTouchkeyPowerOn = 1;
 
-	if (data->led_brightness >= 1)
-		touchkey_led_on(1);
+ 	if (data->led_brightness >= 1)
+ 		touchkey_led_on(1);
 	
 	printk("[TouchKey] enable_irq...\n");
 	
@@ -1974,6 +1982,15 @@ static void tc360_late_resume(struct early_suspend *h)
 	struct tc360_data *data;
 	data = container_of(h, struct tc360_data, early_suspend);
 	tc360_resume(&data->client->dev);
+	
+#ifdef CONFIG_GENERIC_BLN
+	if (LockLed == 0)
+	{
+		gpio_set_value(TOUCHKEY_LDO_EN, 0);
+		bln_tc360_data->led_brightness = 0;
+	}
+	LockLed = 0;
+#endif
 }
 #endif
 

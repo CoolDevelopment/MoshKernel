@@ -81,6 +81,23 @@ while [ "$continue" -eq "0" ]; do
   sleep 1
 done
 
+#Fsync
+continue=0
+while [ "$continue" -eq "0" ]; do
+  echo "Do you want dynamic Fsync?(0/1)"
+  read fsync
+  if [ "$fsync" -eq "0" ] || [ "$fsync" -eq "1" ]; then
+    if [ "$fsync" -eq "0" ];then
+      echo 0 > /sys/kernel/dyn_fsync/Dyn_fsync_active
+    else
+      echo 1 > /sys/kernel/dyn_fsync/Dyn_fsync_active
+    fi
+    continue=1
+  else
+  echo $sync" is not a valid input"
+  fi
+done
+
 
 #INIT.D SCRIPT
 continue=0
@@ -115,7 +132,7 @@ mount -o rw,remount /dev/block/mmcblk0p19 /system
       cpufreq=1200000
     fi
     
-    echo -e "#!/system/bin/sh\n\nsleep 60\necho "$swappiness" > /proc/sys/vm/swappiness\necho "$governor" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor\necho "$iosched" > /sys/block/mmcblk0/queue/scheduler\necho "$cpufreq" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq" > $config_file
+    echo -e "#!/system/bin/sh\n\nsleep 60\necho "$swappiness" > /proc/sys/vm/swappiness\necho "$governor" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor\necho "$iosched" > /sys/block/mmcblk0/queue/scheduler\necho "$cpufreq" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq\n echo "$fsync" > /sys/kernel/dyn_fsync/Dyn_fsync_active" > $config_file
     chmod 755 $config_file
     mount -o ro,remount,errors=panic /dev/block/mmcblk0p19 /system
     

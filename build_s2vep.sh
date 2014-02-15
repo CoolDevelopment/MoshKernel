@@ -5,7 +5,7 @@
 #
 
 #KERNELVERSION
-export KERNELVER=1.7
+export KERNELVER=1.7.2
 
 #TOOLCHAINDIRECTORY
 export CROSS_COMPILE=/home/cooldevelopment/android/cm11/prebuilts/gcc/linux-x86/arm/arm-linux-gnueabi/bin/arm-linux-gnueabi-

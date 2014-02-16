@@ -8,7 +8,7 @@
 export KERNELVER=1.7.2
 
 #TOOLCHAINDIRECTORY
-export CROSS_COMPILE=/home/cooldevelopment/android/cm11/prebuilts/gcc/linux-x86/arm/arm-linux-gnueabi/bin/arm-linux-gnueabi-
+export CROSS_COMPILE=/home/cooldevelopment/android/cm11/prebuilts/gcc/linux-x86/arm/arm-cortex_a9-linux-gnueabihf/bin/arm-cortex_a9-linux-gnueabihf-
 
 #BUILD KERNEL
 make mrproper

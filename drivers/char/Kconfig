@@ -648,7 +648,6 @@ config FRANDOM
 	help
 	  If you do say Y here, the fast random number generator will
 	  be supported.
->>>>>>> 49d5f56... char: add frandom support
 
 endmenu
 

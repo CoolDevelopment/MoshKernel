@@ -6,6 +6,7 @@
 
 #KERNELVERSION
 export KERNELVER=1.7.2
+export CONFIG_LOCALVERSION="$KERNELVER"
 
 #TOOLCHAINDIRECTORY
 export CROSS_COMPILE=/home/cooldevelopment/android/cm11/prebuilts/gcc/linux-x86/arm/arm-cortex_a9-linux-gnueabihf/bin/arm-cortex_a9-linux-gnueabihf-

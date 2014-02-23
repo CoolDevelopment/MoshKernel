@@ -193,3 +193,6 @@ obj-y += ss_musb_info.o
 obj-$(CONFIG_MAP_MEMC_STATISTICS) += memc.o
 
 obj-$(CONFIG_SEC_DEBUG) += sec_debug.o sec_gaf.o sec_getlog.o sec-common.o sec-reboot.o
+
+obj-$(CONFIG_RQ_STATS)			+= rq_stats.o
+obj-$(CONFIG_INTELLI_PLUG) += intelli_plug.o

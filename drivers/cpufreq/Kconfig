@@ -216,6 +216,10 @@ config CPU_FREQ_GOV_SMARTASS2
 	tristate "'smartassV2' cpufreq policy governor"
 	depends on CPU_FREQ
 
+config CPU_FREQ_GOV_PEGASUSQ
+	tristate "'pegasusq' cpufreq policy governor"
+	depends on CPU_FREQ
+
 config CPU_FREQ_GOV_CONSERVATIVE
 	tristate "'conservative' cpufreq governor"
 	depends on CPU_FREQ

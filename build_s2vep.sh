@@ -50,24 +50,25 @@ rm MoshKernel-*.zip
 find . -type f -name *~ -exec rm {} \;
 
 if [ $rom -eq "1" ]; then
-	repack_ramdisk aosp-rd aosp-rd.cpio.gz
+	./tools/mkbootfs aosp-rd | gzip > ramdisk.cpio.gz
+
 else
-	repack_ramdisk stock-rd stock-rd.cpio.gz
+	./tools/mkbootfs stock-rd | gzip > ramdisk.cpio.gz
 fi
 
 if [ $rom -eq "1" ]; then
-	mkbootimg --kernel zImage --ramdisk aosp-rd.cpio.gz --base 0xa2000000 --cmdline 'console=ttyS0,115200n8 mem=832M@0xA2000000 androidboot.console=ttyS0 vc-cma-mem=0/176M@0xCB000000' --pagesize 4096 -o boot.img
+	./tools/mkbootimg --kernel zImage --ramdisk ramdisk.cpio.gz --base 0xa2000000 --cmdline 'console=ttyS0,115200n8 mem=832M@0xA2000000 androidboot.console=ttyS0 vc-cma-mem=0/176M@0xCB000000' --pagesize 4096 -o boot.img
 else 
-	mkbootimg --kernel zImage --ramdisk stock-rd.cpio.gz --base 0xa2000000 --cmdline 'console=ttyS0,115200n8 mem=832M@0xA2000000 androidboot.console=ttyS0 vc-cma-mem=0/176M@0xCB000000' --pagesize 4096 -o boot.img
+	./tools/mkbootimg --kernel zImage --ramdisk ramdisk.cpio.gz --base 0xa2000000 --cmdline 'console=ttyS0,115200n8 mem=832M@0xA2000000 androidboot.console=ttyS0 vc-cma-mem=0/176M@0xCB000000' --pagesize 4096 -o boot.img
 fi
 
 if [ $rom -eq "1" ]; then
 	zip -r MoshKernel-aosp-based-"$KERNELVER".zip boot.img system META-INF
 else 
-	tip -r MoshKernel-stock-"$KERNELVER".zip boot.img system META-INF
+	zip -r MoshKernel-stock-"$KERNELVER".zip boot.img system META-INF
 fi
 
 rm zImage
 rm boot.img
 rm *.cpio.gz
-rm build_zip/system/lib/modules/*.ko
+rm system/lib/modules/*.ko

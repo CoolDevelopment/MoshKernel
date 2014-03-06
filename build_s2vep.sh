@@ -63,7 +63,7 @@ find . -type f \( -name *~ -name "boot.img" -name *.cpio.gz \) -exec rm {} \;
 cd "$romfolder"
 
 if [ $rom -eq "0" ]; then
-	./../tools/mkbootfs stock-rd | gzip > ramdisk.cpio.gz
+	./../tools/mkbootfs ramdisk | gzip > ramdisk.cpio.gz
 	./../tools/mkbootimg --kernel zImage --ramdisk ramdisk.cpio.gz --base 0xa2000000 --cmdline 'console=ttyS0,115200n8 mem=832M@0xA2000000 androidboot.console=ttyS0 vc-cma-mem=0/176M@0xCB000000' --pagesize 4096 -o boot.img
 fi
 	

@@ -52,9 +52,11 @@ typedef struct
 static t_vib_desc vib_desc;
 static int controlset(const char *name, unsigned int *value, int index);
 static void vibrator_control(t_vib_desc *vib_iter, unsigned char onoff);
+#ifndef CONFIG_VIBETONZ
 static int pwm_val = 50;
 
 #define GPIO_MOTOR_EN  189
+#endif
 
 void vibtonz_en(bool en)
 {
@@ -104,6 +106,7 @@ void vibtonz_pwm(int nForce)
 
 EXPORT_SYMBOL(vibtonz_pwm);
 
+#ifndef CONFIG_VIBETONZ
 void drv2603_gpio_en(bool en)
 {
 
@@ -115,6 +118,7 @@ void drv2603_gpio_en(bool en)
 	return;
 	
 }
+#endif
 
 static void vibrator_control(t_vib_desc *vib_iter, unsigned char onoff)
 {
@@ -137,6 +141,7 @@ static void vibrator_control(t_vib_desc *vib_iter, unsigned char onoff)
 		}
 	}
 #endif
+#ifndef CONFIG_VIBETONZ
 	if (onoff == 1)
 	{
 		drv2603_gpio_en(1);
@@ -148,7 +153,7 @@ static void vibrator_control(t_vib_desc *vib_iter, unsigned char onoff)
 		pwm_stop(vib_iter->pwm);
 		drv2603_gpio_en(0);
 	}
-	
+#endif
 
 	return;
 }
@@ -192,6 +197,7 @@ static void vibrator_get_remaining_time(struct timed_output_dev *sdev)
 	printk(KERN_INFO "Vibrator : remaining time : %dms \n", retTime);
 }
 
+#ifndef CONFIG_VIBETONZ
 static ssize_t pwm_val_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
@@ -234,6 +240,7 @@ static int create_vibrator_sysfs(void)
 
 	return 0;
 }
+#endif
 
 
 static int ss_brcm_haptic_probe(struct platform_device *pdev)
@@ -264,7 +271,11 @@ static int ss_brcm_haptic_probe(struct platform_device *pdev)
 
 	regulator_enable(vib_iter->vib_regulator);
 #endif
+#ifndef CONFIG_VIBETONZ
 	vib_iter->gpio_en = &drv2603_gpio_en;
+#else
+	vib_iter->gpio_en = pdata->gpio_en;
+#endif
 	vib_iter->pwm = pwm_request(pdata->pwm_name, "vibrator");
 	if (IS_ERR(vib_iter->pwm)) 
 	{
@@ -296,8 +307,10 @@ static int ss_brcm_haptic_probe(struct platform_device *pdev)
 	platform_set_drvdata(pdev, vib_iter);
 
 	INIT_WORK(&vib_iter->off_work, vibrator_off_work_func);
-	
+
+#ifndef CONFIG_VIBETONZ
 	create_vibrator_sysfs();
+#endif
 	
 	vib_iter->initialized = 1;
 	printk("%s : ss vibrator probe\n", __func__);

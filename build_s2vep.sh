@@ -40,7 +40,11 @@ fi
 make -j8
 
 #MAKE FLASHABLE ZIP
+find ./ -name '*~' | xargs rm
+
 if [ $rom -eq "1" ]; then
+	if [ ! -d build_zip/"$romfolder"/kernel ]; then
+		mkdir build_zip/"$romfolder"/kernel
 	cp arch/arm/boot/zImage build_zip/"$romfolder"/kernel/zImage
 else
 	cp arch/arm/boot/zImage build_zip/"$romfolder"/zImage
@@ -57,7 +61,7 @@ cp drivers/char/broadcom/sigmorph.ko build_zip/"$romfolder"/system/lib/modules/s
 cp drivers/char/frandom.ko build_zip/"$romfolder"/system/lib/modules/frandom.ko
 cd build_zip
 rm MoshKernel-*.zip
-find . -type f \( -name *~ -name "boot.img" -name *.cpio.gz \) -exec rm {} \;
+find . -type f \( -name "boot.img" -name "*.cpio.gz" \) -exec rm {} \;
 
 
 cd "$romfolder"

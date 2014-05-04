@@ -45,6 +45,7 @@ find ./ -name '*~' | xargs rm
 if [ $rom -eq "1" ]; then
 	if [ ! -d build_zip/"$romfolder"/kernel ]; then
 		mkdir build_zip/"$romfolder"/kernel
+	fi
 	cp arch/arm/boot/zImage build_zip/"$romfolder"/kernel/zImage
 else
 	cp arch/arm/boot/zImage build_zip/"$romfolder"/zImage

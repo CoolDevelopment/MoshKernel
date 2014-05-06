@@ -2,6 +2,10 @@
  *
  * Copyright 2011  Michael Richter (alias neldar)
  * Copyright 2011  Adam Kent <adam@semicircular.net>
+ * Copyright 2014  Jonathan Jason Dennis [Meticulus]
+			theonejohnnyd@gmail.com
+ * Copyright 2014  Cool Development [CoolDevelopment]
+			grapaul77@gmail.com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -15,6 +19,9 @@
 #include <linux/miscdevice.h>
 #include <linux/bln.h>
 #include <linux/mutex.h>
+#include <linux/kthread.h>
+#include <linux/sched.h>
+#include <linux/delay.h>
 #ifdef CONFIG_GENERIC_BLN_USE_WAKELOCK
 #include <linux/wakelock.h>
 #endif
@@ -22,6 +29,7 @@
 static bool bln_enabled = false;
 static bool bln_ongoing = false; /* ongoing LED Notification */
 static int bln_blink_state = 0;
+static int bln_led_blink_msecs = 1000; /* blink by default */
 static bool bln_suspended = false; /* is system suspended */
 static struct bln_implementation *bln_imp = NULL;
 
@@ -120,6 +128,20 @@ static struct early_suspend bln_suspend_data = {
 	.resume = bln_late_resume,
 };
 
+static void blink_thread(void)
+{
+	while(bln_suspended)
+	{
+		if (bln_suspended)
+			bln_enable_backlights(get_led_mask());
+		msleep(bln_led_blink_msecs);
+		if (bln_suspended)
+			bln_disable_backlights(get_led_mask());
+		msleep(bln_led_blink_msecs);
+	}
+}
+
+
 static void enable_led_notification(void)
 {
 	if (!bln_enabled)
@@ -132,10 +154,20 @@ static void enable_led_notification(void)
 	if (!bln_suspended)
 		return;
 
+	/*
+	* If we already have a blink thread going
+	* don't start another one.
+	*/
+	if(bln_ongoing & bln_led_blink_msecs != 0)
+		return;
+
 	bln_ongoing = true;
 
 	bln_power_on();
-	bln_enable_backlights(get_led_mask());
+	if(bln_led_blink_msecs == 0)
+		bln_enable_backlights(get_led_mask());
+	else
+		kthread_run(&blink_thread, NULL,"bln_blink_thread");
 	pr_info("%s: notification led enabled\n", __FUNCTION__);
 }
 
@@ -305,6 +337,34 @@ static ssize_t led_count_read(struct device *dev,
 	return sprintf(buf,"%u\n", ret);
 }
 
+static ssize_t led_blink_read(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	unsigned int ret;
+
+	return sprintf(buf, "%u\n", bln_led_blink_msecs);
+}
+
+static ssize_t led_blink_write(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t size)
+{
+	int data;
+
+	if (sscanf(buf, "%u\n", &data) != 1) {
+		pr_info("%s: input error\n", __FUNCTION__);
+		return size;
+	}
+
+	if (data > 15000)
+		data = 15000;
+	else if (data < 50)
+		data = 0;
+
+	bln_led_blink_msecs = data;
+
+	return size;
+}	
+
 #ifdef CONFIG_GENERIC_BLN_USE_WAKELOCK
 static ssize_t wakelock_read(struct device *dev,
 		struct device_attribute *attr, char *buf)
@@ -386,6 +446,9 @@ static DEVICE_ATTR(notification_led, S_IRUGO | S_IWUGO,
 static DEVICE_ATTR(notification_led_mask, S_IRUGO | S_IWUGO,
 		notification_led_mask_read,
 		notification_led_mask_write);
+static DEVICE_ATTR(led_blink_duration, S_IRUGO | S_IWUGO,
+		led_blink_read,
+		led_blink_write);
 static DEVICE_ATTR(version, S_IRUGO , backlightnotification_version, NULL);
 
 #ifdef CONFIG_GENERIC_BLN_USE_WAKELOCK
@@ -399,6 +462,7 @@ static struct attribute *bln_notification_attributes[] = {
 	&dev_attr_led_count.attr,
 	&dev_attr_notification_led.attr,
 	&dev_attr_notification_led_mask.attr,
+	&dev_attr_led_blink_duration.attr,
 #ifdef CONFIG_GENERIC_BLN_EMULATE_BUTTONS_LED
 	&dev_attr_buttons_led.attr,
 #endif
@@ -473,4 +537,3 @@ static int __init bln_control_init(void)
 }
 
 device_initcall(bln_control_init);
-

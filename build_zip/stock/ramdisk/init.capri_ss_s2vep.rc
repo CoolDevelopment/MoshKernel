@@ -187,12 +187,12 @@ on boot
 
 # Permissions for bluetooth
     setprop ro.bt.bdaddr_path "/efs/bluetooth/bt_addr"
-    chown bluetooth net_bt_stack ro.bt.bdaddr_path
-    chown bluetooth net_bt_stack /dev/ttyS2
-    chmod 0600 /dev/ttyS2
+    chown bluetooth bluetooth ro.bt.bdaddr_path
+#    chown bluetooth bluetooth /dev/ttySAC0
+#    chmod 0600 /dev/ttySAC0
     chmod 0660 /sys/class/rfkill/rfkill0/state
-    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/state
-    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/type
+    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/state
+    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/type
 
 # permissions for sensors (accelerometer & magnetic & proximity)
     chown root system /dev/proximity
@@ -459,6 +459,10 @@ on boot
 # allow user space (atx) access to kernel pm debug
 chown system system /sys/module/capri_pm_dbg/parameters/debug
 
+#for bluetooth. permission for host interface
+    chown root bluetooth /dev/ttyS2
+    chmod 0777 /dev/ttyS2
+
 #for fm radio    
     copy /system/etc/local.prop /data/local.prop
     chown system bluetooth /data/local.prop
@@ -471,14 +475,6 @@ chown system system /sys/module/capri_pm_dbg/parameters/debug
     setprop ro.multisim.simslotcount 1
     
 on fs
-    wait /dev/block/mmcblk0p19
-    wait /dev/block/mmcblk0p21
-    wait /dev/block/mmcblk0p18
-    wait /dev/block/mmcblk0p20
-    wait /proc/mounts
-
-    exec /sbin/automount
-
     mount_all /fstab.capri_ss_s2vep
     setprop ro.crypto.fuse_sdcard true
 
@@ -698,8 +694,10 @@ service TvoutService_C /system/bin/bintvoutservice
      class main
      user system
      group system
+
 on property:ro.tvout.enable=false
 	stop TvoutService_C 
+
 #service cpboot-daemon /sbin/cbd -d
 #    class main
 #    user root
